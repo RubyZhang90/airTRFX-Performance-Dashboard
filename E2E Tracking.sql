@@ -89,7 +89,7 @@ count(DISTINCT CASE WHEN event_action = 'open-booking-popup' THEN __createdat::T
 count(DISTINCT CASE WHEN event_action <> 'fsi' and event_action <> 'pageview' and event_action <> 'viewable-impression' THEN __createdat::TIMESTAMP END) as other_event_actions_events
 from public.em_cmp_lib_tracking_001
 where
-upper(airline_code)='Y4' 
+upper(airline_code)='XX' 
 and __createdat::DATE >='2020-05-01' and __createdat::DATE <= current_date::DATE-1
 and event_category not like '%booking-popup%' 
 and json_extract_path_text(variables,'url') not like '%-dev.%'
@@ -122,7 +122,7 @@ json_extract_path_text(variables,'r') as popup_route,
 count(DISTINCT CASE WHEN event_action = 'fsi' THEN __createdat::TIMESTAMP END) as popup_fsi
 from public.em_cmp_lib_tracking_001
 where 
-upper(airline_code)='Y4'
+upper(airline_code)='XX'
 and event_category like '%booking-popup%' and event_action='fsi' 
 and __createdat::DATE >='2020-05-01' and __createdat::DATE <= current_date::DATE-1 
 and json_extract_path_text(variables,'url') not like '%-dev.%'
@@ -151,7 +151,7 @@ count(distinct farenetconfirmationid) as conversions,
 totalpriceusd
 from public.normalized_farenet_confirmation_001
 where 
-upper(airlineiatacode)='Y4' 
+upper(airlineiatacode)='XX' 
 and __createdat::DATE >='2020-05-01'
 and "book_emcid" <>  '' and "book_emcid" <>  'n/a'
 and totalpriceusd is not null
