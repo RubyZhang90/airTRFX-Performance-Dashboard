@@ -1,2 +1,2 @@
-# E2E-Tracking
+# airTRFX Performance Dashboard
 SQL query for E2E Tracking Dashboard
