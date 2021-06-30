@@ -130,9 +130,9 @@ count(DISTINCT CASE WHEN event_action = 'open-booking-popup' THEN __createdat::T
 count(DISTINCT CASE WHEN event_action <> 'fsi' and event_action <> 'pageview' and event_action <> 'viewable-impression' THEN __createdat::TIMESTAMP END) as other_event_actions_events
 from public.em_cmp_lib_tracking_001
 where
-upper(airline_code)='XX'  --change the airlineIataCode here.
-and __createdat >= '2020-05-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP
+__createdat >= '2020-05-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP
 and "searchdate" >='2020-05-01' and "searchdate" <= CURRENT_DATE -1 
+and upper(airline_code)='XX'  --change the airlineIataCode here.
 and event_category not like '%booking-popup%' 
 AND json_extract_path_text(variables, 'url') !~ '\:\/\/[a-z]+-[a-z]+\.'
 AND json_extract_path_text(variables, 'url') !~ '\:\/\/[a-z]+_[a-z]+\.'
@@ -157,10 +157,10 @@ json_extract_path_text(variables,'r') as popup_route,
 count(distinct __createdat::TIMESTAMP) as popup_fsi
 from public.em_cmp_lib_tracking_001
 where 
-event_category like '%booking-popup%' and event_action='fsi' 
-and upper(airline_code)='XX'  --change the airlineIataCode here. 
-and __createdat >= '2020-05-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP
+__createdat >= '2020-05-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP
 and "popup_date" >='2020-05-01' and "popup_date" <= CURRENT_DATE -1
+and upper(airline_code)='XX'  --change the airlineIataCode here. 
+and event_category like '%booking-popup%' and event_action='fsi' 
 group by "popup_date","popup_timestamp","popup_Airline","popup_emcid","event_category2","popup_url","popup_route") bp
 
 on ga.Airline = bp.popup_Airline
@@ -189,8 +189,8 @@ passengercount,
 totalpriceusd
 from public.normalized_farenet_confirmation_001
 where 
-upper(airlineiatacode)='XX'  --change the airlineIataCode here.
-and __createdat >='2020-05-01'::TIMESTAMP
+__createdat >='2020-05-01'::TIMESTAMP
+and upper(airlineiatacode)='XX'  --change the airlineIataCode here.
 and "book_emcid" <>  '' and "book_emcid" <>  'n/a'
 and totalpriceusd is not null
 group by __createdat,upper(airlineIatacode), emcid, farenetconfirmationid, passengercount,totalpriceusd,departureairportiatacode,arrivalairportiatacode) cf
@@ -211,8 +211,9 @@ LEFT JOIN
 (select upper(airlineIatacode) as total_Airline,
   count(distinct farenetconfirmationid) as total_Bookings
 from public.normalized_farenet_confirmation_001
-where upper(airlineiatacode)='XX'  --change the airlineIataCode here.
- and __createdat >='2020-05-01'::TIMESTAMP
+where 
+__createdat >='2020-05-01'::TIMESTAMP
+and upper(airlineiatacode)='XX'  --change the airlineIataCode here.
 GROUP BY "total_Airline") NFC
 
 on ETCF.airlineIataCode=NFC.total_Airline
