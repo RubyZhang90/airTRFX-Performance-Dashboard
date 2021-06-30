@@ -131,7 +131,7 @@ count(DISTINCT CASE WHEN event_action <> 'fsi' and event_action <> 'pageview' an
 from public.em_cmp_lib_tracking_001
 where
 upper(airline_code)='XX'  --change the airlineIataCode here.
-and __createdat >= '2021-05-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP
+and __createdat >= '2020-05-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP
 and "searchdate" >='2020-05-01' and "searchdate" <= CURRENT_DATE -1 
 and event_category not like '%booking-popup%' 
 AND json_extract_path_text(variables, 'url') !~ '\:\/\/[a-z]+-[a-z]+\.'
@@ -159,7 +159,7 @@ from public.em_cmp_lib_tracking_001
 where 
 event_category like '%booking-popup%' and event_action='fsi' 
 and upper(airline_code)='XX'  --change the airlineIataCode here. 
-and __createdat >= '2021-05-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP
+and __createdat >= '2020-05-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP
 and "popup_date" >='2020-05-01' and "popup_date" <= CURRENT_DATE -1
 group by "popup_date","popup_timestamp","popup_Airline","popup_emcid","event_category2","popup_url","popup_route") bp
 
