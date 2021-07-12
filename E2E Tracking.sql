@@ -1,181 +1,107 @@
-SELECT ETCF.*,NFC.total_Bookings 
+SELECT
+ETCF.*
+NFC.total_Bookings 
 FROM
-(select distinct 
+(select 
 searchdate,
-airlineIataCode,
-airModules,
-Device,
+Airline as airlineIataCode,
 pageTypeCode,
 siteEdition,
+airModules,
+Device,
 url,
-case when sum(fsi) >= 1 or sum(bookings)>=1 then route
-else 'n/a'
-end as  route, 
-book_route,
-avg(avg_searched_fare) as avg_searched_fare,
-sum(viewableImpression) AS viewableImpression,
-sum(pageviews) AS pageviews,
-sum(openPopup) AS openPopup,
-sum(fsi) AS fsi,
-sum(other_event_actions_events) AS other_event_actions_events,
-sum(revenueusd) as revenueusd,
+route,
+booked_route as book_route,
+avg(search_price_usd) as avg_searched_fare,
+count (distinct case when event_action='viewable-impression' THEN search_timestamp END) as viewable_impression,
+count(DISTINCT CASE WHEN event_action = 'pageview' THEN search_timestamp END) as pageviews,
+count(DISTINCT CASE WHEN event_action = 'fsi' THEN search_timestamp END) as fsi,
+count(DISTINCT CASE WHEN event_action = 'open-booking-popup' THEN search_timestamp END) as open_popup,
+count(DISTINCT CASE WHEN event_action <> 'fsi' and event_action <> 'pageview' and event_action <> 'viewable-impression' THEN search_timestamp END) as other_event_actions_events,
+sum(bookings) as bookings,
 sum(passengercount) as passengercount,
-sum(bookings) as bookings
-from(
-select distinct 
+sum(revenueusd) as revenueusd
+from
+(select 
 searchdate,
-airlineIataCode,
-airModules,
-Device,
+search_timestamp,
+Airline,
 pageTypeCode,
 siteEdition,
-url, 
+CASE --This CASE statement replaces the airModule names for the popup fsi to the original airModule where the popup window was called. 
+WHEN airmodules = 'em-booking-popup-abstract' AND event_action='fsi' AND  lag(airmodules,1) over (order by search_timestamp) <> 'em-booking-popup-abstract'
+THEN lag(airmodules,1) over (order by emcid,search_timestamp) 
+WHEN airmodules = 'em-booking-popup-abstract' AND event_action='fsi' AND  lag(airmodules,1) over (order by search_timestamp) = 'em-booking-popup-abstract'
+THEN lag(airmodules,2) over (order by emcid,search_timestamp)
+WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,1) over (order by search_timestamp) <> 'em-booking-popup'
+THEN lag(airmodules,1) over (order by emcid,search_timestamp) 
+WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,1) over (order by search_timestamp) = 'em-booking-popup'
+THEN lag(airmodules,2) over (order by emcid,search_timestamp)
+ELSE airModules
+END AS airModules,
+event_action,
+Device,
+emcid,
+url,
 route,
-book_route,
-avg(totalpriceusd) as avg_searched_fare,
-sum(viewableImpression) AS viewableImpression,
-sum(pageviews) AS pageviews,
-sum(openPopup) AS openPopup,
-sum(fsi) AS fsi,
-sum(other_event_actions_events) AS other_event_actions_events,
-sum(case 
-when event_action_group=1 and row =1 then revenueusd else 0 END) AS revenueusd,
-sum(case 
-when event_action_group=1 and row =1 then passengercount else 0 END) AS passengercount,
-sum(case 
-when event_action_group=1 and row =1 then bookings else 0 End) AS bookings
-from 
-(select  
+search_price_usd,
+case when row =1 then book_route else 'n/a' end as booked_route,
+sum(case when row =1 then conversions else 0 end ) as bookings,
+sum(case when row =1 then passengercount else 0 end ) as passengercount,
+sum(case when row =1 then totalpriceusd else 0 end ) as revenueusd
+from
+(select 
 et.searchdate,
 et.search_timestamp,
-et.Airline as airlineIataCode,
-et.airModules,
-et.event_action_group,
-et.Device,
-et.pageTypeCode, 
+et.Airline,
+et.pageTypeCode,
 et.siteEdition,
+et.airModules,
+et.event_action,
+et.Device,
 et.emcid,
-cast(et.totalpriceusd as decimal(10,2)) as totalpriceusd,
 et.url,
 et.route,
+et.search_price_usd,
 cf.book_route,
-sum(et.viewable_impression) as viewableImpression,
-sum(et.pageviews) as pageviews,
-sum(et.open_popup) as openPopup,
-sum(et.fsi) as fsi,
-sum(et.other_event_actions_events) as other_event_actions_events,
-sum(cf.conversions) as Bookings,
-sum(cf.passengercount) as passengercount,
-sum(cf.totalpriceusd ) as RevenueUSD,
-cf.farenetconfirmationid,
+cf.conversions,
+cf.passengercount,
+cf.totalpriceusd,
 ROW_NUMBER () over
-(Partition by et.emcid,et.searchdate,et.Airline, et.Device, et.pageTypeCode, et.siteEdition,et.event_action_group,cf.book_route,cf.farenetconfirmationid
- order by datediff(second,et."search_timestamp",cf."book_timestamp") asc ) as row
-from 
-(select  
-ga.searchdate,
-ga.search_timestamp,
-ga.Airline,
-ga.airModules,
-ga.event_action,
-case
-when ga.event_action IN ('pageview','viewable-impression') then 0
-else 1
-end as event_action_group,
-ga.Device,
-ga.pageTypeCode,
-ga.siteEdition,
-ga.emcid,
-ga.url,
-cast(ga.totalpriceusd as decimal(10,2)) as totalpriceusd,
-case
-when ga.open_popup= 1 and bp.popup_route <> '' then bp.popup_route
-else ga.route
-end as route,
-sum(ga.viewable_impression) as viewable_impression,
-sum(ga.pageviews) as pageviews,
-sum(ga.open_popup) as open_popup,
-sum(ga.other_event_actions_events) as other_event_actions_events,
-sum(case
-when ga.open_popup= 1 and bp.popup_fsi is null then 0
-when ga.open_popup= 1 and bp.popup_fsi is not null then bp.popup_fsi
-else ga.fsi 
-end) as fsi
+(Partition by et.emcid,cf.farenetconfirmationid order by datediff(second,et."search_timestamp",cf."book_timestamp") asc ) as row
 from 
 (select
-distinct
 __createdat::DATE as searchdate,
 __createdat::TIMESTAMP as search_timestamp,
 upper(airline_code) as Airline,
+json_extract_path_text(variables, 'ptc') as pageTypeCode,
+json_extract_path_text(variables, 'se') as siteEdition,
+event_category as airModules,
 event_action,
 upper(json_extract_path_text(variables, 'dct')) as Device,
-json_extract_path_text(variables, 'ptc') as pageTypeCode,
-event_category as airModules,
-json_extract_path_text(variables, 'se') as siteEdition,
 json_extract_path_text(variables,'emcid') as emcid,
 replace(replace(replace(replace(replace(replace(replace(json_extract_path_text(variables,'url'),'\?',''),'\#',''),'\'',''),'\%3A',':'),'\%2F','/'),'\%3F',''),'\%23','') as url,
 --replace(replace(replace(replace(replace(replace(replace(json_extract_path_text(variables,'url'),'\'',''),'\?',''),'\#',''),'\%3A',':'),'\%2F','/'),'\%3F',''),'\%23','') as url,
-case
-when json_extract_path_text(variables,'r')='' then 'n/a'
-ELSE json_extract_path_text(variables,'r')
-end as route,
-case 
+CASE
+WHEN event_action='fsi' then json_extract_path_text(variables,'r')
+ELSE 'n/a'
+END AS route,
+cast((case 
 when replace(replace(json_extract_path_text(variables,'tpu'),'n/a',0),'NaN',0)='' then '0'
 else replace(replace(json_extract_path_text(variables,'tpu'),'n/a',0),'NaN',0)
-end as totalpriceusd,
-count(DISTINCT CASE WHEN event_action = 'viewable-impression' THEN __createdat::TIMESTAMP END) as viewable_impression,
-count(DISTINCT CASE WHEN event_action = 'pageview' THEN __createdat::TIMESTAMP END) as pageviews,
-count(DISTINCT CASE WHEN event_action = 'fsi' THEN __createdat::TIMESTAMP END) as fsi,
-count(DISTINCT CASE WHEN event_action = 'open-booking-popup' THEN __createdat::TIMESTAMP END) as open_popup,
-count(DISTINCT CASE WHEN event_action <> 'fsi' and event_action <> 'pageview' and event_action <> 'viewable-impression' THEN __createdat::TIMESTAMP END) as other_event_actions_events
+end) as decimal(10,2)) as search_price_usd
 from public.em_cmp_lib_tracking_001
 where
-__createdat >= '2020-05-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP
-and "searchdate" >='2020-05-01' and "searchdate" <= CURRENT_DATE -1 
-and upper(airline_code)='XX'  --change the airlineIataCode here.
-and event_category not like '%booking-popup%' 
+__createdat >= '2021-06-01'::TIMESTAMP and  __createdat < '2021-07-01' ::TIMESTAMP --Change timestamp range for events happened.
+and "searchdate" >='2021-06-01' and "searchdate" <= '2021-07-01' ::DATE -1 --Change date range for events happened.
+and upper(airline_code)='XX' --Change airlineIataCode here.
+and event_action not in ('pageview','viewable-impression')
+and "emcid" <> '' and "emcid" <> 'n/a'
 AND json_extract_path_text(variables, 'url') !~ '\:\/\/[a-z]+-[a-z]+\.'
 AND json_extract_path_text(variables, 'url') !~ '\:\/\/[a-z]+_[a-z]+\.'
-group by "searchdate","search_timestamp","Airline","event_action","Device","pageTypeCode","airModules","siteEdition","emcid","url","route","totalpriceusd"
-) ga
-
-left join 
-
-(select
-distinct
-__createdat::DATE as popup_date,
-__createdat::TIMESTAMP as popup_timestamp,
-upper(airline_code) as popup_Airline,
-json_extract_path_text(variables,'emcid') as popup_emcid,
-case event_category 
-     when 'em-booking-popup' then 'open-booking-popup'
-     when 'em-booking-popup-abstract' then 'open-booking-popup'
-     else event_category
-END as event_category2,
-replace(replace(replace(replace(replace(replace(replace(json_extract_path_text(variables,'url'),'\?',''),'\#',''),'\'',''),'\%3A',':'),'\%2F','/'),'\%3F',''),'\%23','') as popup_url,
-json_extract_path_text(variables,'r') as popup_route,
-count(distinct __createdat::TIMESTAMP) as popup_fsi
-from public.em_cmp_lib_tracking_001
-where 
-__createdat >= '2020-05-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP
-and "popup_date" >='2020-05-01' and "popup_date" <= CURRENT_DATE -1
-and upper(airline_code)='XX'  --change the airlineIataCode here. 
-and event_category like '%booking-popup%' and event_action='fsi' 
-group by "popup_date","popup_timestamp","popup_Airline","popup_emcid","event_category2","popup_url","popup_route") bp
-
-on ga.Airline = bp.popup_Airline
-and ga.emcid = bp.popup_emcid 
-and ga.event_action = bp.event_category2
-and ga.searchdate = bp.popup_date
-and ga.search_timestamp < bp.popup_timestamp
-and ga.url = bp.popup_url
-and ga.route = bp.popup_route
-
-GROUP BY ga.searchdate,ga.search_timestamp,ga.Airline,
-ga.airModules,ga.event_action,ga.Device,ga.pageTypeCode,ga.siteEdition,ga.emcid,ga.url,ga.totalpriceusd,ga.route,ga.open_popup,bp.popup_route
 ) et
 
-LEFT JOIN
+left join --This joins the the conversion data to the user interactions (excludes viewable-impression and pageview) data from the event tracking table.
 
 (select
 upper(airlineIatacode) as book_Airline,
@@ -189,9 +115,8 @@ passengercount,
 totalpriceusd
 from public.normalized_farenet_confirmation_001
 where 
-__createdat >='2020-05-01'::TIMESTAMP
-and upper(airlineiatacode)='XX'  --change the airlineIataCode here.
-and "book_emcid" <>  '' and "book_emcid" <>  'n/a'
+__createdat >= '2021-06-01'::TIMESTAMP --Change timestamp range here for bookings according to the starting date of event date range above.
+and upper(airlineiatacode)='XX' --Change airlineIataCode here.
 and totalpriceusd is not null
 group by __createdat,upper(airlineIatacode), emcid, farenetconfirmationid, passengercount,totalpriceusd,departureairportiatacode,arrivalairportiatacode) cf
 
@@ -200,20 +125,50 @@ and et.emcid = cf."book_emcid"
 and et.searchdate +31 >= cf.book_date
 and et.searchdate <= cf.book_date
 and et.search_timestamp < cf.book_timestamp
-
-group by et.searchdate, et.search_timestamp,et.Airline,et.airModules,et.event_action_group,et.emcid,et.totalpriceusd,et.url,et.route,et.Device, et.pageTypeCode, et.siteEdition,cf.book_route,cf.book_timestamp,cf.farenetconfirmationid
 )
-GROUP BY searchdate,airlineIataCode,airModules,Device,pageTypeCode,siteEdition,url,route,book_route)
-GROUP BY searchdate,airlineIataCode,airModules,Device,pageTypeCode,siteEdition,url, route, book_route) ETCF
+group by searchdate,search_timestamp,Airline,pageTypeCode,siteEdition,airModules,event_action,Device,emcid,url,route,search_price_usd,booked_route
 
-LEFT JOIN
+UNION --This unions the pageview and viewable-impression data with the joined data above. Due to the huge size of this part of data + the attribution logic we have for airTRFX Performance Dashboard, it's faster if they are not included in the joins. 
+
+select
+__createdat::DATE as searchdate,
+__createdat::TIMESTAMP as search_timestamp,
+upper(airline_code) as Airline,
+json_extract_path_text(variables, 'ptc') as pageTypeCode,
+json_extract_path_text(variables, 'se') as siteEdition,
+event_category as airModules,
+event_action,
+upper(json_extract_path_text(variables, 'dct')) as Device,
+json_extract_path_text(variables,'emcid') as emcid,
+replace(replace(replace(replace(replace(replace(replace(json_extract_path_text(variables,'url'),'\?',''),'\#',''),'\'',''),'\%3A',':'),'\%2F','/'),'\%3F',''),'\%23','') as url,
+--replace(replace(replace(replace(replace(replace(replace(json_extract_path_text(variables,'url'),'\'',''),'\?',''),'\#',''),'\%3A',':'),'\%2F','/'),'\%3F',''),'\%23','') as url,
+'n/a' AS route,
+0.00 AS search_price_usd,
+'n/a' AS booked_route,
+0 AS bookings,
+0 AS passengercount,
+0 AS revenueusd
+from public.em_cmp_lib_tracking_001
+where
+__createdat >= '2021-06-01'::TIMESTAMP and  __createdat < '2021-07-01' ::TIMESTAMP --Change timestamp range for events happened.
+and "searchdate" >='2021-06-01' and "searchdate" <= '2021-07-01' ::DATE -1 --Change date range for events happened.
+and upper(airline_code)='XX' --Change airlineIataCode here.
+and event_category not like '%booking-popup%'
+and event_action in ('pageview','viewable-impression')
+AND json_extract_path_text(variables, 'url') !~ '\:\/\/[a-z]+-[a-z]+\.'
+AND json_extract_path_text(variables, 'url') !~ '\:\/\/[a-z]+_[a-z]+\.'
+)
+group by 
+searchdate,Airline,pageTypeCode,siteEdition,airModules,Device,url,route,booked_route) ETCF
+
+LEFT JOIN --This step is to verify if the FN confirmation script has ever implemented or not for this customer.
 
 (select upper(airlineIatacode) as total_Airline,
-  count(distinct farenetconfirmationid) as total_Bookings
+count(distinct farenetconfirmationid) as total_Bookings
 from public.normalized_farenet_confirmation_001
 where 
-__createdat >='2020-05-01'::TIMESTAMP
-and upper(airlineiatacode)='XX'  --change the airlineIataCode here.
+__createdat >='2021-01-01'::TIMESTAMP --Change timestamp here to the beginning date of the current year. 
+and upper(airlineiatacode)='XX'  --Change airlineIataCode here.
 GROUP BY "total_Airline") NFC
 
 on ETCF.airlineIataCode=NFC.total_Airline
