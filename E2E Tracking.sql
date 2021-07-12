@@ -1,5 +1,5 @@
 SELECT
-ETCF.*
+ETCF.*,
 NFC.total_Bookings 
 FROM
 (select 
