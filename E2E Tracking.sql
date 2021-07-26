@@ -92,8 +92,8 @@ else replace(replace(json_extract_path_text(variables,'tpu'),'n/a',0),'NaN',0)
 end) as decimal(10,2)) as search_price_usd
 from public.em_cmp_lib_tracking_001
 where
-__createdat >= '2021-06-01'::TIMESTAMP and  __createdat < '2021-07-01' ::TIMESTAMP --Change timestamp range for events happened.
-and "searchdate" >='2021-06-01' and "searchdate" <= '2021-07-01' ::DATE -1 --Change date range for events happened.
+__createdat >= '2020-05-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP --Change timestamp range for events happened.
+and "searchdate" >='2020-05-01' and "searchdate" <= CURRENT_DATE ::DATE -1 --Change date range for events happened.
 and upper(airline_code)='XX' --Change airlineIataCode here.
 and event_action not in ('pageview','viewable-impression')
 and "emcid" <> '' and "emcid" <> 'n/a'
@@ -115,7 +115,7 @@ passengercount,
 totalpriceusd
 from public.normalized_farenet_confirmation_001
 where 
-__createdat >= '2021-06-01'::TIMESTAMP --Change timestamp range here for bookings according to the starting date of event date range above.
+__createdat >= '2020-05-01'::TIMESTAMP --Change timestamp range here for bookings according to the starting date of event date range above.
 and upper(airlineiatacode)='XX' --Change airlineIataCode here.
 and totalpriceusd is not null
 group by __createdat,upper(airlineIatacode), emcid, farenetconfirmationid, passengercount,totalpriceusd,departureairportiatacode,arrivalairportiatacode) cf
@@ -150,8 +150,8 @@ replace(replace(replace(replace(replace(replace(replace(json_extract_path_text(v
 0 AS revenueusd
 from public.em_cmp_lib_tracking_001
 where
-__createdat >= '2021-06-01'::TIMESTAMP and  __createdat < '2021-07-01' ::TIMESTAMP --Change timestamp range for events happened.
-and "searchdate" >='2021-06-01' and "searchdate" <= '2021-07-01' ::DATE -1 --Change date range for events happened.
+__createdat >= '2020-05-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP --Change timestamp range for events happened.
+and "searchdate" >='2020-05-01' and "searchdate" <= CURRENT_DATE ::DATE -1 --Change date range for events happened.
 and upper(airline_code)='XX' --Change airlineIataCode here.
 and event_category not like '%booking-popup%'
 and event_action in ('pageview','viewable-impression')
@@ -167,7 +167,7 @@ LEFT JOIN --This step is to verify if the FN confirmation script has ever implem
 count(distinct farenetconfirmationid) as total_Bookings
 from public.normalized_farenet_confirmation_001
 where 
-__createdat >='2021-01-01'::TIMESTAMP --Change timestamp here to the beginning date of the current year. 
+__createdat >='2020-05-01'::TIMESTAMP --Change timestamp here to the beginning date of the current year. 
 and upper(airlineiatacode)='XX'  --Change airlineIataCode here.
 GROUP BY "total_Airline") NFC
 
