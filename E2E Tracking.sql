@@ -128,7 +128,7 @@ and et.search_timestamp < cf.book_timestamp
 )
 group by searchdate,search_timestamp,Airline,pageTypeCode,siteEdition,airModules,event_action,Device,emcid,url,route,search_price_usd,booked_route
 
-UNION --This unions the pageview and viewable-impression data with the joined data above. Due to the huge size of this part of data + the attribution logic we have for airTRFX Performance Dashboard, it's faster if they are not included in the joins. 
+UNION --This unions the pageview and viewable impression data with the joined data above. 
 
 select
 __createdat::DATE as searchdate,
