@@ -12,7 +12,7 @@ Device,
 url,
 route,
 booked_route as book_route,
-avg(search_price_usd) as avg_searched_fare,
+avg(CASE when search_price_usd >0 then search_price_usd END) as avg_searched_fare,
 count (distinct case when event_action='viewable-impression' THEN search_timestamp END) as viewable_impression,
 count(DISTINCT CASE WHEN event_action = 'pageview' THEN search_timestamp END) as pageviews,
 count(DISTINCT CASE WHEN event_action = 'fsi' THEN search_timestamp END) as fsi,
@@ -45,7 +45,7 @@ emcid,
 url,
 route,
 search_price_usd,
-case when row =1 then book_route else 'n/a' end as booked_route,
+case when row =1 and book_route <> '' then book_route else 'n/a' end as booked_route,
 sum(case when row =1 then conversions else 0 end ) as bookings,
 sum(case when row =1 then passengercount else 0 end ) as passengercount,
 sum(case when row =1 then totalpriceusd else 0 end ) as revenueusd
@@ -84,6 +84,7 @@ replace(replace(replace(replace(replace(replace(replace(json_extract_path_text(v
 --replace(replace(replace(replace(replace(replace(replace(json_extract_path_text(variables,'url'),'\'',''),'\?',''),'\#',''),'\%3A',':'),'\%2F','/'),'\%3F',''),'\%23','') as url,
 CASE
 WHEN event_action='fsi' then json_extract_path_text(variables,'r')
+WHEN event_action='open-booking-popup' then json_extract_path_text(variables,'r')
 ELSE 'n/a'
 END AS route,
 cast((case 
