@@ -156,6 +156,7 @@ and "searchdate" >='2020-05-01' and "searchdate" <= CURRENT_DATE ::DATE -1 --Cha
 and upper(airline_code)='XX' --Change airlineIataCode here.
 and event_category not like '%booking-popup%'
 and event_action in ('pageview','viewable-impression')
+and "emcid" <> '' and "emcid" <> 'n/a'
 AND json_extract_path_text(variables, 'url') !~ '\:\/\/[a-z]+-[a-z]+\.'
 AND json_extract_path_text(variables, 'url') !~ '\:\/\/[a-z]+_[a-z]+\.'
 )
