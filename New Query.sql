@@ -111,7 +111,7 @@ END AS route,
 cast((case 
 when replace(replace(json_extract_path_text(variables,'tpu'),'n/a',0),'NaN',0)='' then '0'
 else replace(replace(json_extract_path_text(variables,'tpu'),'n/a',0),'NaN',0)
-end) as decimal(10,2)) as search_price_usd
+end) as decimal(38,2)) as search_price_usd
 from public.em_cmp_lib_tracking_001
 where
 __createdat >= '2022-12-01'::TIMESTAMP and  __createdat < CURRENT_DATE ::TIMESTAMP --Change timestamp range for events happened.
