@@ -36,23 +36,23 @@ WHEN airmodules = 'em-booking-popup-abstract' AND event_action='fsi' AND  lag(ai
 THEN lag(airmodules,2) over (order by emcid,search_timestamp)*/
 WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,1) over (order by emcid,search_timestamp) <> 'em-booking-popup'
 THEN lag(airmodules,1) over (order by emcid,search_timestamp) 
-WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,1) over (order by emcid,search_timestamp) = 'em-booking-popup'
+WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,1) over (order by emcid,search_timestamp) = 'em-booking-popup' AND  lag(airmodules,2) over (order by emcid,search_timestamp) <> 'em-booking-popup'
 THEN lag(airmodules,2) over (order by emcid,search_timestamp)
-WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,2) over (order by emcid,search_timestamp) = 'em-booking-popup'
+WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,2) over (order by emcid,search_timestamp) = 'em-booking-popup' AND  lag(airmodules,3) over (order by emcid,search_timestamp) <> 'em-booking-popup'
 THEN lag(airmodules,3) over (order by emcid,search_timestamp)
-WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,3) over (order by emcid,search_timestamp) = 'em-booking-popup'
+WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,3) over (order by emcid,search_timestamp) = 'em-booking-popup' AND  lag(airmodules,4) over (order by emcid,search_timestamp) <> 'em-booking-popup'
 THEN lag(airmodules,4) over (order by emcid,search_timestamp)
-WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,4) over (order by emcid,search_timestamp) = 'em-booking-popup'
+WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,4) over (order by emcid,search_timestamp) = 'em-booking-popup' AND  lag(airmodules,5) over (order by emcid,search_timestamp) <> 'em-booking-popup'
 THEN lag(airmodules,5) over (order by emcid,search_timestamp)
-WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,5) over (order by emcid,search_timestamp) = 'em-booking-popup'
+WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,5) over (order by emcid,search_timestamp) = 'em-booking-popup' AND  lag(airmodules,6) over (order by emcid,search_timestamp) <> 'em-booking-popup'
 THEN lag(airmodules,6) over (order by emcid,search_timestamp)
-WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,6) over (order by emcid,search_timestamp) = 'em-booking-popup'
+WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,6) over (order by emcid,search_timestamp) = 'em-booking-popup' AND  lag(airmodules,7) over (order by emcid,search_timestamp) <> 'em-booking-popup'
 THEN lag(airmodules,7) over (order by emcid,search_timestamp)
-WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,7) over (order by emcid,search_timestamp) = 'em-booking-popup'
+WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,7) over (order by emcid,search_timestamp) = 'em-booking-popup' AND  lag(airmodules,8) over (order by emcid,search_timestamp) <> 'em-booking-popup'
 THEN lag(airmodules,8) over (order by emcid,search_timestamp)
-WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,8) over (order by emcid,search_timestamp) = 'em-booking-popup'
+WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,8) over (order by emcid,search_timestamp) = 'em-booking-popup' AND  lag(airmodules,9) over (order by emcid,search_timestamp) <> 'em-booking-popup'
 THEN lag(airmodules,9) over (order by emcid,search_timestamp)
-WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,9) over (order by emcid,search_timestamp) = 'em-booking-popup'
+WHEN airmodules = 'em-booking-popup' AND event_action='fsi' AND  lag(airmodules,9) over (order by emcid,search_timestamp) = 'em-booking-popup' AND  lag(airmodules,10) over (order by emcid,search_timestamp) <> 'em-booking-popup'
 THEN lag(airmodules,10) over (order by emcid,search_timestamp)
 ELSE airModules
 END AS airModules,
